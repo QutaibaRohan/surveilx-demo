@@ -1,30 +1,58 @@
+"use client";
+
 import Link from "next/link";
-import { FC } from "react";
+import { Home, Video, FileEdit } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
-const Sidebar: FC = () => {
+const routes = [
+  {
+    label: "Videos",
+    icon: Video,
+    href: "/videos",
+  },
+  {
+    label: "Library",
+    icon: FileEdit,
+    href: "/library",
+  },
+];
+
+export default function Sidebar() {
+  const pathname = usePathname();
+
   return (
-    <div className="w-64 h-screen bg-gray-100 p-4 fixed left-0 top-0">
-      <div className="mb-8">
-        <h1 className="text-xl font-bold">Logo</h1>
+    <div className="fixed left-0 flex h-full w-64 flex-col bg-secondary">
+      <div className="flex h-14 items-center border-b px-4">
+        <Link href="/" className="flex items-center">
+          <span className="text-2xl font-bold tracking-wider text-primary">
+            SURVEILX
+          </span>
+        </Link>
       </div>
+      <div className="flex-1 overflow-auto py-2">
+        <nav className="grid gap-1 px-2">
+          {routes.map((route) => {
+            const isActive = pathname === route.href;
 
-      <nav className="space-y-4">
-        <Link
-          href="/videos"
-          className="flex items-center space-x-2 p-2 hover:bg-gray-200 rounded"
-        >
-          <span>Videos</span>
-        </Link>
-
-        <Link
-          href="/library"
-          className="flex items-center space-x-2 p-2 hover:bg-gray-200 rounded"
-        >
-          <span>Library</span>
-        </Link>
-      </nav>
+            return (
+              <Link
+                key={route.href}
+                href={route.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 transition-colors",
+                  isActive
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground"
+                )}
+              >
+                <route.icon className="h-4 w-4" />
+                <span className="text-sm font-semibold">{route.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
     </div>
   );
-};
-
-export default Sidebar;
+}

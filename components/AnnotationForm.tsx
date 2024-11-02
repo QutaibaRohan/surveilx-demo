@@ -69,7 +69,7 @@ export function AnnotationForm({
           value={tagInput}
           onChange={handleTagInputChange}
           onKeyDown={handleAddTag}
-          placeholder="Give a tag (press Enter to add)"
+          placeholder="Give a tag (press enter to add)"
           className="bg-secondary/50"
         />
         <div className="flex flex-wrap gap-2">

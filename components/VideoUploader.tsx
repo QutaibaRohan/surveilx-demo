@@ -66,7 +66,7 @@ export default function VideoUploader() {
     <div
       className={cn(
         "w-full aspect-video border-2 border-dashed rounded-lg flex flex-col items-center justify-center space-y-4 transition-colors",
-        isDragging ? "border-primary bg-primary/10" : "border-muted"
+        isDragging ? "border-primary bg-primary/10" : "border-slate-400"
       )}
       onDrop={handleDrop}
       onDragOver={handleDragOver}

@@ -114,10 +114,10 @@ export default function VideoAnnotation() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">
+      {/* <h2 className="text-xl font-semibold">
         Record - {new Date().toLocaleDateString()} -{" "}
         {new Date().toLocaleTimeString()}
-      </h2>
+      </h2> */}
 
       <div className="space-y-4">
         <VideoPlayer videoRef={videoRef} selectedVideo={selectedVideo} />

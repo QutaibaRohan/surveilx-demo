@@ -25,7 +25,7 @@ export default function LibraryPage() {
         setCurrentVideoIndex,
       }}
     >
-      <div className="space-y-8">
+      <div className="space-y-8 mt-8">
         <div
           className={`grid grid-cols-1 ${selectedVideo ? "lg:grid-cols-2" : ""} gap-8`}
         >
