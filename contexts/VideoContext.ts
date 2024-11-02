@@ -2,7 +2,7 @@
 
 import { createContext, useContext } from "react";
 
-interface VideoFile {
+export interface VideoFile {
   file: File;
   id: string | null;
 }
