@@ -8,6 +8,17 @@ import { useVideo } from "@/contexts/VideoContext";
 import { createClient } from "@/utils/supabase/client";
 import { Loader2, Play } from "lucide-react";
 import { uploadToS3 } from "@/utils/aws/s3.utils";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const annotationSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string(),
+  tags: z.array(z.string()),
+});
+
+type AnnotationForm = z.infer<typeof annotationSchema>;
 
 export default function VideoAnnotation() {
   const {
@@ -21,20 +32,41 @@ export default function VideoAnnotation() {
     setCurrentVideoIndex,
   } = useVideo();
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
-  const [newTag, setNewTag] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const form = useForm<AnnotationForm>({
+    resolver: zodResolver(annotationSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      tags: [],
+    },
+  });
+
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && newTag.trim()) {
+    if (e.key === "Enter") {
       e.preventDefault();
-      setTags([...tags, newTag.trim()]);
-      setNewTag("");
+      const target = e.target as HTMLInputElement;
+      const newTag = target.value.trim();
+
+      if (newTag) {
+        const currentTags = form.getValues("tags");
+        if (!currentTags.includes(newTag)) {
+          form.setValue("tags", [...currentTags, newTag]);
+        }
+        target.value = ""; // Clear input directly
+      }
     }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    const currentTags = form.getValues("tags");
+    form.setValue(
+      "tags",
+      currentTags.filter((tag) => tag !== tagToRemove)
+    );
   };
 
   const handleSelectVideo = (index: number) => {
@@ -43,7 +75,7 @@ export default function VideoAnnotation() {
     setVideoId(pendingVideos[index].id);
   };
 
-  const handleSave = async () => {
+  const handleSave = async (formData: AnnotationForm) => {
     if (!selectedVideo) return;
     const supabase = createClient();
 
@@ -82,9 +114,9 @@ export default function VideoAnnotation() {
         .insert([
           {
             video_id: videoData.id,
-            title,
-            description,
-            tags,
+            title: formData.title,
+            description: formData.description,
+            tags: formData.tags,
           },
         ]);
 
@@ -97,9 +129,7 @@ export default function VideoAnnotation() {
       setPendingVideos(newPendingVideos);
 
       // 6. Reset form
-      setTitle("");
-      setDescription("");
-      setTags([]);
+      form.reset();
 
       // 7. Set next video if available
       if (newPendingVideos.length > 0) {
@@ -163,17 +193,20 @@ export default function VideoAnnotation() {
       </div>
 
       {/* Form */}
-      <div className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSave)} className="space-y-4">
         <Input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          {...form.register("title")}
           placeholder="Title"
           className="bg-secondary/50"
         />
+        {form.formState.errors.title && (
+          <span className="text-sm text-red-500">
+            {form.formState.errors.title.message}
+          </span>
+        )}
 
         <Textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          {...form.register("description")}
           placeholder="Description"
           rows={4}
           className="bg-secondary/50"
@@ -181,27 +214,32 @@ export default function VideoAnnotation() {
 
         <div className="space-y-2">
           <Input
-            value={newTag}
-            onChange={(e) => setNewTag(e.target.value)}
             onKeyDown={handleAddTag}
-            placeholder="Give a tag"
+            placeholder="Give a tag (press Enter to add)"
             className="bg-secondary/50"
           />
           <div className="flex flex-wrap gap-2">
-            {tags.map((tag) => (
+            {form.watch("tags").map((tag) => (
               <span
                 key={tag}
-                className="bg-secondary px-2 py-1 rounded text-sm"
+                className="bg-secondary px-2 py-1 rounded text-sm flex items-center gap-1"
               >
                 {tag}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveTag(tag)}
+                  className="ml-1 text-xs hover:text-red-500"
+                >
+                  ×
+                </button>
               </span>
             ))}
           </div>
         </div>
 
         <Button
+          type="submit"
           className="w-full"
-          onClick={handleSave}
           disabled={isUploading || !selectedVideo}
         >
           {isUploading ? (
@@ -215,7 +253,7 @@ export default function VideoAnnotation() {
             "SAVE"
           )}
         </Button>
-      </div>
+      </form>
     </div>
   );
 }
