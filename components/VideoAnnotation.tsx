@@ -57,7 +57,9 @@ export default function VideoAnnotation() {
       const s3Url = await uploadToS3(
         selectedVideo,
         uniqueFileName,
-        (progress) => setUploadProgress(progress)
+        (progress) => {
+          setUploadProgress(progress);
+        }
       );
 
       const { data: videoData, error: videoError } = await supabase
