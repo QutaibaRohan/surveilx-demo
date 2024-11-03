@@ -11,6 +11,7 @@ import { PendingVideoGrid } from "./PendingVideoGrid";
 import { AnnotationForm as AnnotationFormComponent } from "./AnnotationForm";
 import { AnnotationForm } from "@/interfaces/annotations.interface";
 import { annotationSchema } from "@/schemas/annotation.schema";
+import { throttle } from "lodash";
 
 export default function VideoAnnotation() {
   const {
@@ -27,6 +28,12 @@ export default function VideoAnnotation() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const throttledSetProgress = throttle(
+    (setUploadProgress: (progress: number) => void, progress: number) => {
+      setUploadProgress(progress);
+    },
+    200 // Update progress at most every 200ms
+  );
 
   const form = useForm<AnnotationForm>({
     resolver: zodResolver(annotationSchema),
@@ -48,19 +55,25 @@ export default function VideoAnnotation() {
     const supabase = createClient();
 
     try {
+      console.log("=== Save Started ===");
       setIsUploading(true);
       setUploadProgress(0);
 
       const fileExt = selectedVideo.name.split(".").pop();
       const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
+      console.log("Starting upload for:", uniqueFileName);
+
       const s3Url = await uploadToS3(
         selectedVideo,
         uniqueFileName,
         (progress) => {
-          setUploadProgress(progress);
+          console.log("Progress update:", progress);
+          throttledSetProgress(setUploadProgress, progress);
         }
       );
+
+      console.log("Upload complete:", s3Url);
 
       const { data: videoData, error: videoError } = await supabase
         .from("Videos")

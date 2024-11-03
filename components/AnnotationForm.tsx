@@ -4,6 +4,7 @@ import { Textarea } from "@/components/Textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { AnnotationFormProps } from "@/interfaces/annotations.interface";
+import { UploadProgress } from "./UploadProgress";
 
 export function AnnotationForm({
   form,
@@ -22,21 +23,17 @@ export function AnnotationForm({
     if (e.key === "Enter") {
       e.preventDefault();
       const newTag = tagInput.trim();
+      const currentTags = form.getValues("tags") || [];
 
-      if (newTag) {
-        const currentTags = form.getValues("tags");
-        if (!currentTags.includes(newTag)) {
-          form.setValue("tags", [...currentTags, newTag], {
-            shouldDirty: true,
-          });
-        }
+      if (newTag && !currentTags.includes(newTag)) {
+        form.setValue("tags", [...currentTags, newTag], { shouldDirty: true });
         setTagInput("");
       }
     }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    const currentTags = form.getValues("tags");
+    const currentTags = form.getValues("tags") || [];
     form.setValue(
       "tags",
       currentTags.filter((tag) => tag !== tagToRemove),
@@ -73,7 +70,7 @@ export function AnnotationForm({
           className="bg-secondary/50"
         />
         <div className="flex flex-wrap gap-2">
-          {form.watch("tags").map((tag) => (
+          {form.getValues("tags")?.map((tag) => (
             <span
               key={tag}
               className="bg-secondary px-2 py-1 rounded text-sm flex items-center gap-1"
@@ -97,14 +94,7 @@ export function AnnotationForm({
         className="w-full"
         disabled={isUploading || !selectedVideo}
       >
-        {isUploading ? (
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            {Math.round(uploadProgress)}%
-          </div>
-        ) : (
-          "SAVE"
-        )}
+        {isUploading ? <UploadProgress progress={uploadProgress} /> : "SAVE"}
       </Button>
     </form>
   );
