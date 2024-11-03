@@ -11,12 +11,12 @@ import { PendingVideoGrid } from "./PendingVideoGrid";
 import { AnnotationForm as AnnotationFormComponent } from "./AnnotationForm";
 import { AnnotationForm } from "@/interfaces/annotations.interface";
 import { annotationSchema } from "@/schemas/annotation.schema";
-import { throttle } from "lodash";
+import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
 
 export default function VideoAnnotation() {
   const {
     selectedVideo,
-    videoId,
     pendingVideos,
     currentVideoIndex,
     setPendingVideos,
@@ -26,14 +26,7 @@ export default function VideoAnnotation() {
   } = useVideo();
 
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const throttledSetProgress = throttle(
-    (setUploadProgress: (progress: number) => void, progress: number) => {
-      setUploadProgress(progress);
-    },
-    200 // Update progress at most every 200ms
-  );
 
   const form = useForm<AnnotationForm>({
     resolver: zodResolver(annotationSchema),
@@ -50,30 +43,16 @@ export default function VideoAnnotation() {
     setVideoId(pendingVideos[index].id);
   };
 
-  const handleSave = async (formData: AnnotationForm) => {
-    if (!selectedVideo) return;
-    const supabase = createClient();
-
-    try {
-      console.log("=== Save Started ===");
-      setIsUploading(true);
-      setUploadProgress(0);
+  const uploadMutation = useMutation({
+    mutationKey: ["upload"],
+    mutationFn: async (formData: AnnotationForm) => {
+      if (!selectedVideo) return;
+      const supabase = createClient();
 
       const fileExt = selectedVideo.name.split(".").pop();
       const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-      console.log("Starting upload for:", uniqueFileName);
-
-      const s3Url = await uploadToS3(
-        selectedVideo,
-        uniqueFileName,
-        (progress) => {
-          console.log("Progress update:", progress);
-          throttledSetProgress(setUploadProgress, progress);
-        }
-      );
-
-      console.log("Upload complete:", s3Url);
+      const s3Url = await uploadToS3(selectedVideo, uniqueFileName);
 
       const { data: videoData, error: videoError } = await supabase
         .from("Videos")
@@ -96,12 +75,24 @@ export default function VideoAnnotation() {
 
       if (annotationError) throw annotationError;
 
+      return videoData;
+    },
+    onSuccess: () => {
+      toast.success("Video uploaded and annotated successfully!");
       handleSuccessfulSave();
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error saving:", error);
+      toast.error("Failed to upload video. Please try again.");
+    },
+  });
+
+  const handleSave = async (formData: AnnotationForm) => {
+    setIsUploading(true);
+    try {
+      await uploadMutation.mutateAsync(formData);
     } finally {
       setIsUploading(false);
-      setUploadProgress(0);
     }
   };
 
@@ -133,7 +124,6 @@ export default function VideoAnnotation() {
         Record - {new Date().toLocaleDateString()} -{" "}
         {new Date().toLocaleTimeString()}
       </h2> */}
-
       <div className="space-y-4">
         <VideoPlayer videoRef={videoRef} selectedVideo={selectedVideo} />
 
@@ -147,7 +137,7 @@ export default function VideoAnnotation() {
       <AnnotationFormComponent
         form={form}
         isUploading={isUploading}
-        uploadProgress={uploadProgress}
+        //uploadProgress={uploadProgress}
         selectedVideo={selectedVideo}
         onSubmit={handleSave}
       />

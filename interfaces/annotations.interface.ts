@@ -31,7 +31,7 @@ export interface PendingVideoGridProps {
 export interface AnnotationFormProps {
   form: UseFormReturn<AnnotationForm>;
   isUploading: boolean;
-  uploadProgress: number;
+  //uploadProgress: number;
   selectedVideo: File | null;
   onSubmit: (data: AnnotationForm) => Promise<void>;
 }

@@ -9,6 +9,8 @@ export function VideoPlayer({ videoRef, selectedVideo }: VideoPlayerProps) {
         className="w-full h-full object-contain"
         controls
         autoPlay
+        playsInline
+        loop
       />
     </div>
   );

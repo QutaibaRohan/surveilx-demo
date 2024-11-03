@@ -3,6 +3,8 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { cn } from "@/lib/utils";
+import { Toaster } from "sonner";
+import QueryProvider from "@/providers/QueryProvider";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -28,12 +30,22 @@ export default function RootLayout({
           "min-h-screen font-poppins bg-background text-foreground"
         )}
       >
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <main className="flex-1 ml-64">
-            <div className="container p-8">{children}</div>
-          </main>
-        </div>
+        <QueryProvider>
+          <div className="flex min-h-screen">
+            <Sidebar />
+            <main className="flex-1 ml-64">
+              <div className="container p-8">{children}</div>
+            </main>
+          </div>
+          <Toaster
+            toastOptions={{
+              classNames: {
+                success: "bg-green-600 text-white",
+                error: "bg-red-600 text-white",
+              },
+            }}
+          />
+        </QueryProvider>
       </body>
     </html>
   );

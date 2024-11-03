@@ -9,7 +9,7 @@ import { UploadProgress } from "./UploadProgress";
 export function AnnotationForm({
   form,
   isUploading,
-  uploadProgress,
+  //uploadProgress,
   selectedVideo,
   onSubmit,
 }: AnnotationFormProps) {
@@ -47,6 +47,7 @@ export function AnnotationForm({
         {...form.register("title")}
         placeholder="Title"
         className="bg-secondary/50"
+        disabled={isUploading}
       />
       {form.formState.errors.title && (
         <span className="text-sm text-red-500">
@@ -59,6 +60,7 @@ export function AnnotationForm({
         placeholder="Description"
         rows={4}
         className="bg-secondary/50"
+        disabled={isUploading}
       />
 
       <div className="space-y-2">
@@ -68,6 +70,7 @@ export function AnnotationForm({
           onKeyDown={handleAddTag}
           placeholder="Give a tag (press enter to add)"
           className="bg-secondary/50"
+          disabled={isUploading}
         />
         <div className="flex flex-wrap gap-2">
           {form.getValues("tags")?.map((tag) => (
@@ -80,6 +83,7 @@ export function AnnotationForm({
                 type="button"
                 onClick={() => handleRemoveTag(tag)}
                 className="ml-1 text-xs hover:text-red-500"
+                disabled={isUploading}
                 aria-label={`Remove ${tag} tag`}
               >
                 ×
@@ -94,7 +98,7 @@ export function AnnotationForm({
         className="w-full"
         disabled={isUploading || !selectedVideo}
       >
-        {isUploading ? <UploadProgress progress={uploadProgress} /> : "SAVE"}
+        {isUploading ? <UploadProgress /> : "SAVE"}
       </Button>
     </form>
   );

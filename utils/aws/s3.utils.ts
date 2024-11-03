@@ -69,17 +69,17 @@ export async function listVideos() {
   }
 }
 
-export async function uploadToS3(file: File, fileName: string, onProgress?: (progress: number) => void) {
+export async function uploadToS3(file: File, fileName: string) {
   // For small files, use simple upload
   if (file.size <= CHUNK_SIZE) {
-    return uploadSmallFile(file, fileName, onProgress);
+    return uploadSmallFile(file, fileName);
   }
   
   // For larger files, use multipart upload
-  return uploadLargeFile(file, fileName, onProgress);
+  return uploadLargeFile(file, fileName);
 }
 
-async function uploadSmallFile(file: File, fileName: string, onProgress?: (progress: number) => void) {
+async function uploadSmallFile(file: File, fileName: string) {
   const s3Path = `published-videos/${fileName}`;
   
   try {
@@ -91,7 +91,7 @@ async function uploadSmallFile(file: File, fileName: string, onProgress?: (progr
     });
 
     await acceleratedS3Client.send(command);
-    onProgress?.(100);
+   
 
     return `https://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}.s3.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/${s3Path}`;
   } catch (error) {
@@ -100,7 +100,7 @@ async function uploadSmallFile(file: File, fileName: string, onProgress?: (progr
   }
 }
 
-async function uploadLargeFile(file: File, fileName: string, onProgress?: (progress: number) => void) {
+async function uploadLargeFile(file: File, fileName: string) {
   const s3Path = `published-videos/${fileName}`;
   let uploadId: string | undefined;
 
@@ -144,10 +144,7 @@ async function uploadLargeFile(file: File, fileName: string, onProgress?: (progr
 
       // Update progress
       uploadedBytes += chunk.byteLength;
-      if (onProgress) {
-        const progressPercentage = (uploadedBytes / file.size) * 90;
-        onProgress(progressPercentage);
-      }
+      
 
       return {
         PartNumber: index + 1,
@@ -172,7 +169,7 @@ async function uploadLargeFile(file: File, fileName: string, onProgress?: (progr
       MultipartUpload: { Parts: parts }
     }));
 
-    onProgress?.(100);
+   
     console.log('Upload completed successfully');
 
     return `https://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}.s3.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/${s3Path}`;
