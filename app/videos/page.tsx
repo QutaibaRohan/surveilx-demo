@@ -50,12 +50,18 @@ export default async function VideosPage() {
                 </p>
               </div>
 
-              <Button size="icon" variant="ghost" className="h-8 w-8" asChild>
+              <Button
+                size="icon"
+                variant="secondary"
+                className="h-8 w-8"
+                asChild
+              >
                 <a
                   href={video.aws_path}
-                  download
+                  download={video.file_name}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-primary"
                 >
                   <Download className="h-4 w-4" />
                 </a>

@@ -8,6 +8,7 @@ export function VideoPlayer({ videoRef, selectedVideo }: VideoPlayerProps) {
         src={selectedVideo ? URL.createObjectURL(selectedVideo) : undefined}
         className="w-full h-full object-contain"
         controls
+        autoPlay
       />
     </div>
   );
