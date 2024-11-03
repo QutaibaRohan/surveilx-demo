@@ -1,4 +1,4 @@
-import { VideoFile } from "@/contexts/VideoContext";
+import { VideoFile } from "@/contexts/video.context";
 import { annotationSchema } from "@/schemas/annotation.schema";
 import { UseFormReturn } from "react-hook-form";
 import { z } from "zod";

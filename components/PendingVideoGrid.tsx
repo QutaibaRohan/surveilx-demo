@@ -2,7 +2,7 @@ import { PendingVideoGridProps } from "@/interfaces/annotations.interface";
 import { Play, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
-import { useVideo } from "@/contexts/VideoContext";
+import { useVideo } from "@/contexts/video.context";
 
 export function PendingVideoGrid({
   pendingVideos,

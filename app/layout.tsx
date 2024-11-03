@@ -42,6 +42,7 @@ export default function RootLayout({
               classNames: {
                 success: "bg-green-600 text-white",
                 error: "bg-red-600 text-white",
+                loading: "bg-primary/10 text-primary",
               },
             }}
           />

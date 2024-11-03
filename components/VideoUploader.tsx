@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useVideo } from "@/contexts/VideoContext";
 import { Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useVideo } from "@/contexts/video.context";
 
 export default function VideoUploader() {
   const {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useVideo } from "@/contexts/VideoContext";
 import { createClient } from "@/utils/supabase/client";
 import { uploadToS3 } from "@/utils/aws/s3.utils";
 import { useForm } from "react-hook-form";
@@ -13,6 +12,7 @@ import { AnnotationForm } from "@/interfaces/annotations.interface";
 import { annotationSchema } from "@/schemas/annotation.schema";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
+import { useVideo } from "@/contexts/video.context";
 
 export default function VideoAnnotation() {
   const {
